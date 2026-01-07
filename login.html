@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访问验证</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* 一二布布背景 - 清晰版 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://lsh-hexo-image.oss-cn-beijing.aliyuncs.com/image/deer-firefly/login.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+        
+        /* 轻微遮罩 */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: -1;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 40px;
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .icon-wrapper {
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .icon-wrapper img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #f5576c;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(245, 87, 108, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-wrapper">
+            <img src="https://lsh-hexo-image.oss-cn-beijing.aliyuncs.com/image/deer-firefly/icon.jpg" alt="icon">
+        </div>
+        
+        <div class="input-wrapper">
+            <input type="password" id="passwordInput" placeholder="请输入密码" autofocus>
+        </div>
+        
+        <button id="submitBtn" onclick="checkPassword()">进入</button>
+        
+        <p class="error" id="errorMsg">❌ 密码错误,请重试</p>
+        <p class="loading" id="loadingMsg">正在进入</p>
+    </div>
+    
+    <script>
+        // 🔐 修改这里设置你的密码
+        const correctPassword = "111";
+        
+        function checkPassword() {
+            const input = document.getElementById('passwordInput');
+            const errorMsg = document.getElementById('errorMsg');
+            const loadingMsg = document.getElementById('loadingMsg');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            const password = input.value.trim();
+            
+            if (!password) {
+                errorMsg.textContent = '❌ 请输入密码';
+                errorMsg.style.display = 'block';
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 2000);
+                return;
+            }
+            
+            if (password === correctPassword) {
+                // 密码正确
+                errorMsg.style.display = 'none';
+                loadingMsg.style.display = 'block';
+                submitBtn.disabled = true;
+                
+                // 保存验证状态
+                sessionStorage.setItem('lw_auth', 'true');
+                localStorage.setItem('lw_auth_time', Date.now().toString());
+                
+                // 跳转到首页
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 800);
+            } else {
+                // 密码错误
+                errorMsg.textContent = '❌ 密码错误,请重试';
+                errorMsg.style.display = 'block';
+                input.value = '';
+                input.focus();
+                
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // 回车提交
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        // 如果已验证,直接跳转
+        if (sessionStorage.getItem('lw_auth') === 'true') {
+            const authTime = localStorage.getItem('lw_auth_time');
+            if (authTime && (Date.now() - parseInt(authTime)) < 24 * 60 * 60 * 1000) {
+                window.location.href = '/';
+            } else {
+                sessionStorage.removeItem('lw_auth');
+                localStorage.removeItem('lw_auth_time');
+            }
+        }
+    </script>
+</body>
+</html>
